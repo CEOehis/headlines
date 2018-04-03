@@ -3,6 +3,7 @@ import { Card, CardImg, CardText, CardBody,
   CardTitle, Button, Input, Form, FormGroup } from 'reactstrap';
 import './App.css';
 import { countries } from './utils/countries';
+import { sources } from './utils/sources';
 
 const PATH_BASE = 'https://newsapi.org/v2/';
 const PARAM_TOP = 'top-headlines?';
@@ -13,7 +14,8 @@ class App extends Component {
     super();
     this.state = {
       articles: [],
-      country: 'us'
+      country: 'us',
+      sources: sources
     }
 
     this.handleCountryChange = this.handleCountryChange.bind(this);
@@ -22,7 +24,8 @@ class App extends Component {
   }
 
   componentDidMount() {
-    this.fetchCountryStories(this.state.country)
+    this.fetchCountryStories(this.state.country);
+    this.fetchSources();
   }
   
   fetchCountryStories(countryCode) {
@@ -51,22 +54,40 @@ class App extends Component {
     window.open(url);
   }
 
+  fetchSources() {
+    const sourcesUrl = 'https://newsapi.org/v2/sources?apiKey=d371786357714d1db3a78f9fda001e81'
+    fetch(sourcesUrl)
+      .then(res => res.json())
+      .then(res => {
+        this.setState({
+          sources: res.sources
+        })
+      })
+  }
+
   render() {
-    const { articles, country } = this.state;
+    const { articles, country, sources } = this.state;
     return (
       <div className="container-fluid">
         <header className="">
           <h1 className="text-center">Headlines</h1>
         </header>
         <section className="app row">
-          <section className="sidebar col-md-2">
+          <section className="col-md-2">
+            <div className="sidebar">
             <Form>
               <FormGroup className="mb-2 mr-sm-2 mb-sm-0">
                 <Input type="text" name="search" id="search" placeholder="search sources" />
               </FormGroup>
               <Button>Search</Button>
             </Form>
-            <h5>Select source</h5>
+            <h6>Select News source</h6>
+            <ul style={{maxHeight: '400px', overflowY: 'scroll', width: '100%', paddingLeft: '0'}}>
+              {sources.map(source => 
+                <li key={source.id}>{source.name}</li>
+              )}
+            </ul>
+            </div>
           </section>
           <section className="main col-md-10">
             <nav>
