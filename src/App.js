@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Card, CardImg, CardText, CardBody,
-  CardTitle, Button } from 'reactstrap';
+  CardTitle, Button, Input, Form, FormGroup } from 'reactstrap';
 import './App.css';
 import { countries } from './utils/countries';
 
@@ -18,6 +18,7 @@ class App extends Component {
 
     this.handleCountryChange = this.handleCountryChange.bind(this);
     this.fetchCountryStories = this.fetchCountryStories.bind(this);
+    this.openNewsLink = this.openNewsLink.bind(this);
   }
 
   componentDidMount() {
@@ -45,36 +46,53 @@ class App extends Component {
     this.fetchCountryStories(event.target.value);
   }
 
+  openNewsLink(url) {
+    console.log(url);
+    window.open(url);
+  }
+
   render() {
     const { articles, country } = this.state;
     return (
-      <div className="">
+      <div className="container-fluid">
         <header className="">
           <h1 className="text-center">Headlines</h1>
         </header>
-        <nav>
-          <select value={country} onChange={this.handleCountryChange}>
-          {countries.map(country =>
-            <option key={country.code} value={country.code.toLowerCase()}>{country.name}</option>
-          )}
-          </select>
-        </nav>
-        <main className="container-fluid">
-          <div className="row">
-            {articles.map(article =>
-              <div key={article.url} style={{marginBottom: '20px'}} className="col-md-4">
-                <Card>
-                  <CardImg style={{height: '265px' }} top width="100%" src={article.urlToImage} />
-                  <CardBody>
-                    <CardTitle>{article.title}</CardTitle>
-                    <CardText>{article.description}</CardText>
-                    <Button>Button</Button>
-                  </CardBody>
-                </Card>
+        <section className="app row">
+          <section className="sidebar col-md-2">
+            <Form>
+              <FormGroup className="mb-2 mr-sm-2 mb-sm-0">
+                <Input type="text" name="search" id="search" placeholder="search sources" />
+              </FormGroup>
+              <Button>Search</Button>
+            </Form>
+            <h5>Select source</h5>
+          </section>
+          <section className="main col-md-10">
+            <nav>
+              <select className="form-control" value={country} onChange={this.handleCountryChange}>
+              {countries.map(country =>
+                <option key={country.code} value={country.code.toLowerCase()}>{country.name}</option>
+              )}
+              </select>
+            </nav>
+            <main className="container-fluid">
+              <div className="row">
+                {articles.map(article =>
+                  <div key={article.url} style={{marginBottom: '20px'}} className="col-md-4">
+                    <Card onClick={() => this.openNewsLink(article.url)}>
+                      <CardImg style={{height: '160px' }} top width="100%" src={article.urlToImage} />
+                      <CardBody>
+                        <CardTitle>{article.title}</CardTitle>
+                        <CardText>{article.description}</CardText>
+                      </CardBody>
+                    </Card>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </main>
+            </main>
+          </section>
+        </section>
       </div>
     );
   }
