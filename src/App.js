@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Card, CardImg, CardText, CardBody,
   CardTitle, Button } from 'reactstrap';
 import './App.css';
+import { countries } from './utils/countries';
 
 const PATH_BASE = 'https://newsapi.org/v2/';
 const PARAM_TOP = 'top-headlines?';
@@ -35,6 +36,13 @@ class App extends Component {
         <header className="">
           <h1 className="text-center">Headlines</h1>
         </header>
+        <nav>
+          <select>
+          {countries.map(country =>
+            <option key={country.code} value={country.code}>{country.name}</option>
+          )}
+          </select>
+        </nav>
         <main className="container-fluid">
           <div className="row">
             {articles.map(article =>
