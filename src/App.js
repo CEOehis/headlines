@@ -23,6 +23,7 @@ class App extends Component {
     this.fetchCountryStories = this.fetchCountryStories.bind(this);
     this.openNewsLink = this.openNewsLink.bind(this);
     this.onSearchSourceChange = this.onSearchSourceChange.bind(this);
+    this.fetchSourceStories = this.fetchSourceStories.bind(this);
   }
 
   componentDidMount() {
@@ -41,6 +42,19 @@ class App extends Component {
           articles: res.articles
         });
       });    
+  }
+
+  fetchSourceStories(source) {
+    const queryUrl = `${PATH_BASE}${PARAM_TOP}sources=${source}&${PATH_API}`;
+    console.log(queryUrl);
+    fetch(queryUrl)
+      .then(res => res.json())
+      .then(res => {
+        console.log(res.articles);
+        this.setState({
+          articles: res.articles
+        });
+      });  
   }
 
   handleCountryChange(event) {
@@ -91,9 +105,9 @@ class App extends Component {
               </FormGroup>
             </Form>
             <h6>Select News source</h6>
-            <ul style={{maxHeight: '400px', overflowY: 'scroll', width: '100%', paddingLeft: '0'}}>
+            <ul style={{maxHeight: '500px', overflowY: 'scroll', width: '100%', paddingLeft: '0'}}>
               {sources.filter(source => source.name.toLowerCase().includes(searchSourceInput.toLowerCase())).map(source => 
-                <li key={source.id}>{source.name}</li>
+                <li onClick={() => this.fetchSourceStories(source.id)} style={{cursor: 'pointer'}} key={source.id}>{source.name}</li>
               )}
             </ul>
             </div>
@@ -110,7 +124,7 @@ class App extends Component {
               <div className="row">
                 {articles.map(article =>
                   <div key={article.url} style={{marginBottom: '20px'}} className="col-md-4">
-                    <Card onClick={() => this.openNewsLink(article.url)}>
+                    <Card style={{cursor: 'pointer'}} onClick={() => this.openNewsLink(article.url)}>
                       <CardImg style={{height: '160px' }} top width="100%" src={article.urlToImage} />
                       <CardBody>
                         <CardTitle>{article.title}</CardTitle>
