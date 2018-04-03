@@ -15,12 +15,14 @@ class App extends Component {
     this.state = {
       articles: [],
       country: 'us',
-      sources: sources
+      sources: sources,
+      searchSourceInput: ''
     }
 
     this.handleCountryChange = this.handleCountryChange.bind(this);
     this.fetchCountryStories = this.fetchCountryStories.bind(this);
     this.openNewsLink = this.openNewsLink.bind(this);
+    this.onSearchSourceChange = this.onSearchSourceChange.bind(this);
   }
 
   componentDidMount() {
@@ -65,8 +67,16 @@ class App extends Component {
       })
   }
 
+  onSearchSourceChange(event) {
+    let { sources, searchSourceInput } = this.state;
+    searchSourceInput = event.target.value;
+    this.setState({
+      searchSourceInput
+    });
+  }
+
   render() {
-    const { articles, country, sources } = this.state;
+    const { articles, country, sources, searchSourceInput } = this.state;
     return (
       <div className="container-fluid">
         <header className="">
@@ -77,13 +87,12 @@ class App extends Component {
             <div className="sidebar">
             <Form>
               <FormGroup className="mb-2 mr-sm-2 mb-sm-0">
-                <Input type="text" name="search" id="search" placeholder="search sources" />
+                <Input value={searchSourceInput} onChange={this.onSearchSourceChange} type="text" name="search" id="search" placeholder="search sources" />
               </FormGroup>
-              <Button>Search</Button>
             </Form>
             <h6>Select News source</h6>
             <ul style={{maxHeight: '400px', overflowY: 'scroll', width: '100%', paddingLeft: '0'}}>
-              {sources.map(source => 
+              {sources.filter(source => source.name.toLowerCase().includes(searchSourceInput.toLowerCase())).map(source => 
                 <li key={source.id}>{source.name}</li>
               )}
             </ul>
