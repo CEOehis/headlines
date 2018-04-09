@@ -17,7 +17,7 @@ class App extends Component {
       country: '',
       sources: sources,
       searchSourceInput: '',
-      articlesBy: ''
+      articlesBy: 'country'
     }
 
     this.handleCountryChange = this.handleCountryChange.bind(this);
@@ -55,7 +55,8 @@ class App extends Component {
       .then(res => {
         console.log(res.articles);
         this.setState({
-          articles: res.articles
+          articles: res.articles,
+          articlesBy: 'source'
         });
       });
   }
@@ -126,25 +127,32 @@ class App extends Component {
               </select>
             </nav>
             <main className="container-fluid">
-              <div className="row">
-                {articles.map(article =>
-                  <div key={article.url} style={{marginBottom: '20px'}} className="col-md-4">
-                    <Card style={{cursor: 'pointer'}} onClick={() => this.openNewsLink(article.url)}>
-                      <CardImg style={{height: '160px' }} top width="100%" src={article.urlToImage} />
-                      <CardBody>
-                        <CardTitle>{article.title}</CardTitle>
-                        <CardText>{article.description}</CardText>
-                      </CardBody>
-                    </Card>
-                  </div>
-                )}
-              </div>
+              {this.state.articlesBy === 'country' ? <Articles articles={articles} onOpenLink={this.openNewsLink} /> : <h1>Source</h1>}
             </main>
           </section>
         </section>
       </div>
     );
   }
+}
+
+function Articles(props) {
+  const {articles, onOpenLink} = props;
+  return (
+    <div className="row">
+      {articles.map(article =>
+        <div key={article.url} style={{ marginBottom: '20px' }} className="col-md-4">
+          <Card style={{ cursor: 'pointer' }} onClick={() => onOpenLink(article.url)}>
+            <CardImg style={{ height: '160px' }} top width="100%" src={article.urlToImage} />
+            <CardBody>
+              <CardTitle>{article.title}</CardTitle>
+              <CardText>{article.description}</CardText>
+            </CardBody>
+          </Card>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default App;
