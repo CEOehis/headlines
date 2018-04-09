@@ -14,9 +14,10 @@ class App extends Component {
     super();
     this.state = {
       articles: [],
-      country: 'us',
+      country: '',
       sources: sources,
-      searchSourceInput: ''
+      searchSourceInput: '',
+      articlesBy: ''
     }
 
     this.handleCountryChange = this.handleCountryChange.bind(this);
@@ -30,8 +31,9 @@ class App extends Component {
     this.fetchCountryStories(this.state.country);
     this.fetchSources();
   }
-  
+
   fetchCountryStories(countryCode) {
+    countryCode = countryCode ? countryCode : 'us';
     const queryUrl = `${PATH_BASE}${PARAM_TOP}country=${countryCode}&${PATH_API}`;
     console.log(queryUrl);
     fetch(queryUrl)
@@ -39,9 +41,10 @@ class App extends Component {
       .then(res => {
         console.log(res.articles);
         this.setState({
-          articles: res.articles
+          articles: res.articles,
+          articlesBy: 'country'
         });
-      });    
+      });
   }
 
   fetchSourceStories(source) {
@@ -54,11 +57,12 @@ class App extends Component {
         this.setState({
           articles: res.articles
         });
-      });  
+      });
   }
 
   handleCountryChange(event) {
     console.log(event.target.value);
+    if(event.target.value === '') return;
     this.setState({
       country: event.target.value
     });
@@ -106,7 +110,7 @@ class App extends Component {
             </Form>
             <h6>Select News source</h6>
             <ul style={{maxHeight: '500px', overflowY: 'scroll', width: '100%', paddingLeft: '0'}}>
-              {sources.filter(source => source.name.toLowerCase().includes(searchSourceInput.toLowerCase())).map(source => 
+              {sources.filter(source => source.name.toLowerCase().includes(searchSourceInput.toLowerCase())).map(source =>
                 <li onClick={() => this.fetchSourceStories(source.id)} style={{cursor: 'pointer'}} key={source.id}>{source.name}</li>
               )}
             </ul>
@@ -115,6 +119,7 @@ class App extends Component {
           <section className="main col-md-10">
             <nav>
               <select className="form-control" value={country} onChange={this.handleCountryChange}>
+                <option value="">Choose country</option>
               {countries.map(country =>
                 <option key={country.code} value={country.code.toLowerCase()}>{country.name}</option>
               )}
