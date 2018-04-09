@@ -13,7 +13,8 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
-      articles: [],
+      countryArticles: [],
+      sourceArticles: [],
       country: '',
       sources: sources,
       searchSourceInput: '',
@@ -41,7 +42,7 @@ class App extends Component {
       .then(res => {
         console.log(res.articles);
         this.setState({
-          articles: res.articles,
+          countryArticles: res.articles,
           articlesBy: 'country'
         });
       });
@@ -55,7 +56,7 @@ class App extends Component {
       .then(res => {
         console.log(res.articles);
         this.setState({
-          articles: res.articles,
+          sourceArticles: res.articles,
           articlesBy: 'source'
         });
       });
@@ -95,7 +96,7 @@ class App extends Component {
   }
 
   render() {
-    const { articles, country, sources, searchSourceInput } = this.state;
+    const { countryArticles, sourceArticles, country, sources, searchSourceInput } = this.state;
     return (
       <div className="container-fluid">
         <header className="">
@@ -127,7 +128,7 @@ class App extends Component {
               </select>
             </nav>
             <main className="container-fluid">
-              {this.state.articlesBy === 'country' ? <Articles articles={articles} onOpenLink={this.openNewsLink} /> : <h1>Source</h1>}
+              {this.state.articlesBy === 'country' ? <Articles articles={countryArticles} onOpenLink={this.openNewsLink} /> : <Articles articles={sourceArticles} onOpenLink={this.onOpenLink} />}
             </main>
           </section>
         </section>
