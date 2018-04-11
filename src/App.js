@@ -4,6 +4,7 @@ import { Card, CardImg, CardText, CardBody,
 import './App.css';
 import { countries } from './utils/countries';
 import { sources } from './utils/sources';
+import idb from 'idb';
 
 const PATH_BASE = 'https://newsapi.org/v2/';
 const PARAM_TOP = 'top-headlines?';
@@ -26,9 +27,51 @@ class App extends Component {
     this.openNewsLink = this.openNewsLink.bind(this);
     this.onSearchSourceChange = this.onSearchSourceChange.bind(this);
     this.fetchSourceStories = this.fetchSourceStories.bind(this);
+
+    this.dbPromise = this.openDataBase();
+    console.log(this);
+  }
+
+  openDataBase() {
+    console.log('start open db');
+    if (!navigator.serviceWorker) {
+      return Promise.resolve();
+    }
+    console.log('opening db...');
+    return idb.open('headlineDb', 1, function (upgradeDb) {
+      console.log('suceed open db');
+      var store = upgradeDb.createObjectStore('headlines', {
+        keyPath: 'url'
+      });
+      store.createIndex('by-date', 'publishedAt');
+      store.createIndex('by-country', 'byCountry');
+    })
+  }
+
+  showCachedCountryArticles() {
+    console.log('this is ', this);
+    return this.dbPromise.then((db) => {
+      console.log('yay db', db)
+      if (!db || this.state.countryArticles.length > 0) return;
+
+      var index = db.transaction('headlines')
+        .objectStore('headlines').index('by-country');
+
+      return index.getAll().then((articles) => {
+        console.log('gotten articles is', articles);
+        this.setState({
+          countryArticles: articles.reverse()
+        })
+      })
+    })
   }
 
   componentDidMount() {
+    // this.showCachedCountryArticles().then(() => {
+    //   setTimeout(() => {
+    //     this.fetchCountryStories(this.state.country);
+    //   }, 10000);
+    // });
     this.fetchCountryStories(this.state.country);
     this.fetchSources();
   }
@@ -37,15 +80,36 @@ class App extends Component {
     countryCode = countryCode ? countryCode : 'us';
     const queryUrl = `${PATH_BASE}${PARAM_TOP}country=${countryCode}&${PATH_API}`;
     console.log(queryUrl);
-    fetch(queryUrl)
-      .then(res => res.json())
-      .then(res => {
-        console.log(res.articles);
-        this.setState({
-          countryArticles: res.articles,
-          articlesBy: 'country'
-        });
-      });
+    this.showCachedCountryArticles().then(() => {
+      setTimeout(() => {
+        fetch(queryUrl)
+          .then(res => res.json())
+          .then(res => {
+            console.log(res.articles);
+            this.setState({
+              countryArticles: res.articles,
+              articlesBy: 'country'
+            });
+
+            this.dbPromise.then((db) => {
+              if(!db) return;
+
+              var tx = db.transaction('headlines', 'readwrite');
+              var store = tx.objectStore('headlines');
+              res.articles.slice().forEach((article) => {
+                var _article = Object.assign({}, article);
+                _article.byCountry = countryCode;
+                store.put(_article);
+              });
+            })
+          });
+      }, 10000);
+    })
+
+
+    function addStoriesToDB(country, data) {
+
+    }
   }
 
   fetchSourceStories(source) {
