@@ -29,7 +29,6 @@ class App extends Component {
     this.fetchSourceStories = this.fetchSourceStories.bind(this);
 
     this.dbPromise = this.openDataBase();
-    console.log(this);
   }
 
   openDataBase() {
@@ -50,8 +49,8 @@ class App extends Component {
   }
 
   showCachedCountryArticles(country) {
+    console.log('fetching cached country articles')
     return this.dbPromise.then((db) => {
-      console.log('yay db', db)
       if (!db) return;
 
       console.log('found country db... starting serialization');
@@ -87,11 +86,6 @@ class App extends Component {
   }
 
   componentDidMount() {
-    // this.showCachedCountryArticles().then(() => {
-    //   setTimeout(() => {
-    //     this.fetchCountryStories(this.state.country);
-    //   }, 10000);
-    // });
     this.fetchCountryStories(this.state.country);
     this.fetchSources();
   }
@@ -101,29 +95,27 @@ class App extends Component {
     const queryUrl = `${PATH_BASE}${PARAM_TOP}country=${countryCode}&${PATH_API}`;
     console.log(queryUrl);
     this.showCachedCountryArticles(countryCode).then(() => {
-      setTimeout(() => {
-        fetch(queryUrl)
-          .then(res => res.json())
-          .then(res => {
-            console.log(res.articles);
-            this.setState({
-              countryArticles: res.articles,
-              articlesBy: 'country'
-            });
-
-            this.dbPromise.then((db) => {
-              if(!db) return;
-
-              var tx = db.transaction('headlines', 'readwrite');
-              var store = tx.objectStore('headlines');
-              res.articles.slice().forEach((article) => {
-                var _article = Object.assign({}, article);
-                _article.byCountry = countryCode;
-                store.put(_article);
-              });
-            })
+      fetch(queryUrl)
+        .then(res => res.json())
+        .then(res => {
+          console.log(res.articles);
+          this.setState({
+            countryArticles: res.articles,
+            articlesBy: 'country'
           });
-      }, 10000);
+
+          this.dbPromise.then((db) => {
+            if(!db) return;
+
+            var tx = db.transaction('headlines', 'readwrite');
+            var store = tx.objectStore('headlines');
+            res.articles.slice().forEach((article) => {
+              var _article = Object.assign({}, article);
+              _article.byCountry = countryCode;
+              store.put(_article);
+            });
+          })
+        });
     })
   }
 
@@ -131,29 +123,27 @@ class App extends Component {
     const queryUrl = `${PATH_BASE}${PARAM_TOP}sources=${source}&${PATH_API}`;
     console.log(queryUrl);
     this.showCachedSourceArticles(source).then(() => {
-      setTimeout(() => {
-        fetch(queryUrl)
-          .then(res => res.json())
-          .then(res => {
-            console.log(res.articles);
-            this.setState({
-              sourceArticles: res.articles,
-              articlesBy: 'source'
-            });
-
-            this.dbPromise.then((db) => {
-              if (!db) return;
-
-              var tx = db.transaction('headlines', 'readwrite');
-              var store = tx.objectStore('headlines');
-              res.articles.forEach((article) => {
-                var _article = Object.assign({}, article);
-                _article.bySource = source;
-                store.put(_article);
-              });
-            })
+      fetch(queryUrl)
+        .then(res => res.json())
+        .then(res => {
+          console.log(res.articles);
+          this.setState({
+            sourceArticles: res.articles,
+            articlesBy: 'source'
           });
-      }, 5000);
+
+          this.dbPromise.then((db) => {
+            if (!db) return;
+
+            var tx = db.transaction('headlines', 'readwrite');
+            var store = tx.objectStore('headlines');
+            res.articles.forEach((article) => {
+              var _article = Object.assign({}, article);
+              _article.bySource = source;
+              store.put(_article);
+            });
+          })
+        });
     })
   }
 
