@@ -45,11 +45,11 @@ class App extends Component {
       });
       store.createIndex('by-date', 'publishedAt');
       store.createIndex('by-country', 'byCountry');
+      store.createIndex('by-source','bySource');
     })
   }
 
   showCachedCountryArticles() {
-    console.log('this is ', this);
     return this.dbPromise.then((db) => {
       console.log('yay db', db)
       if (!db || this.state.countryArticles.length > 0) return;
@@ -61,6 +61,25 @@ class App extends Component {
         console.log('gotten articles is', articles);
         this.setState({
           countryArticles: articles.reverse()
+        })
+      })
+    })
+  }
+
+  showCachedSourceArticles(source) {
+    console.log('fetching cached source articles')
+    return this.dbPromise.then((db) => {
+      if(!db) return;
+
+      console.log('found db... starting serialization');
+      var index = db.transaction('headlines')
+        .objectStore('headlines').index('by-source');
+
+      return index.getAll(source).then((articles) => {
+        console.log('got source articles:', articles);
+        this.setState({
+          sourceArticles: articles,
+          articlesBy: 'source'
         })
       })
     })
@@ -105,25 +124,36 @@ class App extends Component {
           });
       }, 10000);
     })
-
-
-    function addStoriesToDB(country, data) {
-
-    }
   }
 
   fetchSourceStories(source) {
     const queryUrl = `${PATH_BASE}${PARAM_TOP}sources=${source}&${PATH_API}`;
     console.log(queryUrl);
-    fetch(queryUrl)
-      .then(res => res.json())
-      .then(res => {
-        console.log(res.articles);
-        this.setState({
-          sourceArticles: res.articles,
-          articlesBy: 'source'
-        });
-      });
+    this.showCachedSourceArticles(source).then(() => {
+      setTimeout(() => {
+        fetch(queryUrl)
+          .then(res => res.json())
+          .then(res => {
+            console.log(res.articles);
+            this.setState({
+              sourceArticles: res.articles,
+              articlesBy: 'source'
+            });
+
+            this.dbPromise.then((db) => {
+              if (!db) return;
+
+              var tx = db.transaction('headlines', 'readwrite');
+              var store = tx.objectStore('headlines');
+              res.articles.forEach((article) => {
+                var _article = Object.assign({}, article);
+                _article.bySource = source;
+                store.put(_article);
+              });
+            })
+          });
+      }, 5000);
+    })
   }
 
   handleCountryChange(event) {
