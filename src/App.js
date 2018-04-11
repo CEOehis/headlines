@@ -49,15 +49,16 @@ class App extends Component {
     })
   }
 
-  showCachedCountryArticles() {
+  showCachedCountryArticles(country) {
     return this.dbPromise.then((db) => {
       console.log('yay db', db)
-      if (!db || this.state.countryArticles.length > 0) return;
+      if (!db) return;
 
+      console.log('found country db... starting serialization');
       var index = db.transaction('headlines')
         .objectStore('headlines').index('by-country');
 
-      return index.getAll().then((articles) => {
+      return index.getAll(country).then((articles) => {
         console.log('gotten articles is', articles);
         this.setState({
           countryArticles: articles.reverse()
@@ -99,7 +100,7 @@ class App extends Component {
     countryCode = countryCode ? countryCode : 'us';
     const queryUrl = `${PATH_BASE}${PARAM_TOP}country=${countryCode}&${PATH_API}`;
     console.log(queryUrl);
-    this.showCachedCountryArticles().then(() => {
+    this.showCachedCountryArticles(countryCode).then(() => {
       setTimeout(() => {
         fetch(queryUrl)
           .then(res => res.json())
